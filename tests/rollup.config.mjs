@@ -2,12 +2,12 @@ import typescript from "rollup-plugin-typescript2";
 import toUnityJsLib from "../out/index.es.mjs";
 
 export default {
-  input: "test.ts",
+  input: "./tests/test.ts",
   output: [
     {
       exports: "default",
-      file: "out/index.js",
+      file: "tests/out/index.js",
     },
   ],
-  plugins: [typescript(), toUnityJsLib()],
+  plugins: [typescript({ tsconfig: "./tests/tsconfig.json" }), toUnityJsLib()],
 };

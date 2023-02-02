@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+      "target": "ES6",
+      "forceConsistentCasingInFileNames": true,
+      "outDir": "out/",
+      "experimentalDecorators": true
+    },
+    "include": ["./*.ts"]
+  }
