@@ -50,16 +50,17 @@ export class HooksParser {
       const param = p as ts.ParameterDeclaration;
       parameters.push({
         name: (param.name as any)?.escapedText,
-        type: this.parseParamType(param.type),
+        type: this.parseParamType(param.type, HookParameterType.String),
       });
     }
 
-    return { name: name, parameters: parameters };
+    const returnType = this.parseParamType(m.type, HookParameterType.Void);
+    return { name: name, parameters: parameters, returnType: returnType };
   }
 
-  private parseParamType(type: ts.TypeNode | undefined) {
+  private parseParamType(type: ts.TypeNode | undefined, defaultType: HookParameterType) {
     if (!type) {
-      return HookParameterType.String;
+      return defaultType;
     }
 
     const typeKind = type.kind;

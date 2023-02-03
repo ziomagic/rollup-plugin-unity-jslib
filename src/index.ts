@@ -23,7 +23,6 @@ export default function toUnityJsLib(): Plugin {
       if (code.includes("class UnityHooks")) {
         const parser = new HooksParser();
         parserResult = parser.parse(code);
-        return null;
       }
 
       const result: TransformResult = {

@@ -1,6 +1,7 @@
 export interface HookMethod {
   name: string;
   parameters: HookParameter[];
+  returnType: HookParameterType;
 }
 
 export interface HookParameter {
@@ -12,4 +13,5 @@ export enum HookParameterType {
   String,
   Number,
   Object,
+  Void,
 }
