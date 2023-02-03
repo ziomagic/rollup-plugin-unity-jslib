@@ -6,6 +6,7 @@ export default {
   output: [
     {
       exports: "default",
+      format: "iife",
       file: "tests/out/index.js",
     },
   ],

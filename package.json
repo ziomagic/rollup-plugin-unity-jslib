@@ -1,4 +1,10 @@
 {
+  "name": "rollup-plugin-unity-jslib",
+  "version": "0.0.1",
+  "author": {
+    "name": "Sławomir Kmiecik",
+    "url": "https://github.com/ziomagic/rollup-plugin-unity-jslib"
+  },
   "scripts": {
     "check": "rollup -c && rollup -c ./tests/rollup.config.mjs"
   },

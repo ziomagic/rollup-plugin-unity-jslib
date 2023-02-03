@@ -2,7 +2,8 @@ import { HookMethod, HookParameter, HookParameterType } from "./hookMethod";
 
 const template = `
 mergeInto(LibraryManager.library, {
-  init: function() {
+  init: function(gameObjnameStr) {
+    var gameObjName = UTF8ToString(gameObjnameStr);
     window._skJsLibEngine = { 
       {{$code}}
     }

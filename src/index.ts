@@ -1,4 +1,5 @@
 import type { OutputBundle, OutputOptions, Plugin, TransformResult } from "rollup";
+import { CsLibBuilder } from "./csLibBuilder";
 import { HooksParser, HooksParserResult } from "./hooksParser";
 
 import { JsLibBuilder } from "./jsLibBuilder";
@@ -16,6 +17,13 @@ export default function toUnityJsLib(): Plugin {
         type: "asset",
         fileName: "index.jslib",
         source: code,
+      });
+
+      let csBuilder = new CsLibBuilder();
+      this.emitFile({
+        type: "asset",
+        fileName: "index.cs",
+        source: csBuilder.buildCsClass(parserResult.methods),
       });
     },
 
