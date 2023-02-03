@@ -1,5 +1,6 @@
 export interface HookMethod {
   name: string;
+  parameters: HookParameter[];
 }
 
 export interface HookParameter {

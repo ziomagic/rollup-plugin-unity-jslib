@@ -1,3 +1,5 @@
+import { DependentRoller } from "./dependent";
+
 export class UnityHooks {
   static call() {}
 
@@ -5,7 +7,7 @@ export class UnityHooks {
     console.log("windo open");
   }
 
-  withParameter(num: number, str: string) {
-    console.log("parameters used" + num);
+  withParameter(num: number, str: string, depten: DependentRoller) {
+    console.log("parameters used" + num + str);
   }
 }

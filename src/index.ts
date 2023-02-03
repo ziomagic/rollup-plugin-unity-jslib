@@ -1,8 +1,7 @@
 import type { OutputBundle, OutputOptions, Plugin, TransformResult } from "rollup";
-import ts from "typescript";
 import { HooksParser, HooksParserResult } from "./hooksParser";
 
-import { mergeWithJslib } from "./jslib";
+import { JsLibBuilder } from "./jsLibBuilder";
 
 var parserResult: HooksParserResult;
 
@@ -11,7 +10,8 @@ export default function toUnityJsLib(): Plugin {
     name: "toJsLib",
     async generateBundle(options: OutputOptions, bundle: OutputBundle) {
       let code = (bundle["index.js"] as any).code;
-      code = mergeWithJslib(code, parserResult.methods);
+      let builder = new JsLibBuilder();
+      code = builder.buildJsLib(code, parserResult.methods);
       this.emitFile({
         type: "asset",
         fileName: "index.jslib",

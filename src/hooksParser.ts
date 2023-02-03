@@ -1,7 +1,8 @@
 import ts from "typescript";
+import { HookMethod, HookParameter, HookParameterType } from "./hookMethod";
 
 export class HooksParserResult {
-  methods: any[] = [];
+  methods: HookMethod[] = [];
 }
 
 export class HooksParser {
@@ -42,17 +43,33 @@ export class HooksParser {
     return output;
   }
 
-  private parseMethod(m: ts.MethodDeclaration) {
+  private parseMethod(m: ts.MethodDeclaration): HookMethod {
     const name = (m.name as any).escapedText;
-
+    const parameters: HookParameter[] = [];
     for (var p of m.parameters) {
       const param = p as ts.ParameterDeclaration;
-      if (ts.isVariableDeclaration(param)) {
-        const v = param as ts.VariableDeclaration;
-        console.log(v);
-      }
+      parameters.push({
+        name: (param.name as any)?.escapedText,
+        type: this.parseParamType(param.type),
+      });
     }
 
-    return name;
+    return { name: name, parameters: parameters };
+  }
+
+  private parseParamType(type: ts.TypeNode | undefined) {
+    if (!type) {
+      return HookParameterType.String;
+    }
+
+    const typeKind = type.kind;
+    switch (typeKind) {
+      case ts.SyntaxKind.NumberKeyword:
+        return HookParameterType.Number;
+      case ts.SyntaxKind.StringKeyword:
+        return HookParameterType.String;
+    }
+
+    return HookParameterType.Object;
   }
 }

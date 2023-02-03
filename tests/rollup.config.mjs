@@ -9,5 +9,5 @@ export default {
       file: "tests/out/index.js",
     },
   ],
-  plugins: [typescript({ tsconfig: "./tests/tsconfig.json" }), toUnityJsLib()],
+  plugins: [toUnityJsLib(), typescript({ tsconfig: "./tests/tsconfig.json" })],
 };
