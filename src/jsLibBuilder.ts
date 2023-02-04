@@ -2,31 +2,40 @@ import { HookMethod, HookParameter, HookParameterType } from "./hookMethod";
 
 const template = `
 mergeInto(LibraryManager.library, {
-  init: function(gameObjnameStr) {
-    var gameObjName = UTF8ToString(gameObjnameStr);
-    window._skJsLibEngine = {{$code}}
-  },
-
   {{$methods}}
 })
 `;
 
-const engineInvoker = "window._skJsLibEngine";
-
 export class JsLibBuilder {
-  buildJsLib(code: string, methods: HookMethod[]) {
-    let methodsStr = "";
-    for (let m of methods) {
-      const engineCall = `${engineInvoker}.${m.name}${this.buildEngineCallParameters(m.parameters)};`;
+  private namespace: string;
+  private methodPrefix: string;
 
-      methodsStr += m.name + `: function(${this.buildFunctionParameters(m.parameters)}) {\n`;
+  constructor(namespace: string, methodPrefix: string) {
+    this.namespace = "window." + namespace;
+    this.methodPrefix = methodPrefix;
+  }
+
+  buildJsLib(code: string, methods: HookMethod[]) {
+    let methodsStr = this.buildInitMethod(code);
+    for (let m of methods) {
+      const engineCall = `${this.namespace}.${m.name}${this.buildEngineCallParameters(m.parameters)};`;
+
+      methodsStr += `${this.methodPrefix}${m.name}: function(${this.buildFunctionParameters(m.parameters)}) {\n`;
       methodsStr += this.buildFunctionCall(engineCall, m.returnType);
       methodsStr += "\n},\n";
     }
 
-    let output = template.replace("{{$code}}", code);
-    output = output.replace("{{$methods}}", methodsStr);
+    let output = template.replace("{{$methods}}", methodsStr);
     return output;
+  }
+
+  private buildInitMethod(code: string) {
+    return `
+    ${this.methodPrefix}init: function(gameObjNameStr) {
+      var gameObjName = UTF8ToString(gameObjNameStr);
+      ${this.namespace} = ${code}
+    },
+  `;
   }
 
   private buildFunctionParameters(parameters: HookParameter[]) {
