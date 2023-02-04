@@ -22,7 +22,7 @@ export default function toUnityJsLib(): Plugin {
       let csBuilder = new CsLibBuilder();
       this.emitFile({
         type: "asset",
-        fileName: "index.cs",
+        fileName: "UnityJsLibHooks.cs",
         source: csBuilder.buildCsClass(parserResult.methods),
       });
     },

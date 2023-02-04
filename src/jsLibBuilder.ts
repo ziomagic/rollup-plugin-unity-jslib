@@ -4,10 +4,8 @@ const template = `
 mergeInto(LibraryManager.library, {
   init: function(gameObjnameStr) {
     var gameObjName = UTF8ToString(gameObjnameStr);
-    window._skJsLibEngine = { 
-      {{$code}}
-    }
-  }
+    window._skJsLibEngine = {{$code}}
+  },
 
   {{$methods}}
 })
@@ -19,7 +17,7 @@ export class JsLibBuilder {
   buildJsLib(code: string, methods: HookMethod[]) {
     let methodsStr = "";
     for (let m of methods) {
-      const engineCall = `${engineInvoker}.UnityRoot.${m.name}${this.buildEngineCallParameters(m.parameters)};`;
+      const engineCall = `${engineInvoker}.${m.name}${this.buildEngineCallParameters(m.parameters)};`;
 
       methodsStr += m.name + `: function(${this.buildFunctionParameters(m.parameters)}) {\n`;
       methodsStr += this.buildFunctionCall(engineCall, m.returnType);
@@ -36,7 +34,7 @@ export class JsLibBuilder {
     if (parameters) {
       parametersStr = parameters.map((x) => x.name).join(", ");
     }
-    return `(${parametersStr})`;
+    return `${parametersStr}`;
   }
 
   private buildEngineCallParameters(parameters: HookParameter[]) {

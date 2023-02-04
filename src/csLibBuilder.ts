@@ -5,6 +5,10 @@ using UnityEngine;
 using System.Runtime.InteropServices;
 
 public class UnityJsLibHooks : MonoBehaviour {
+
+  [DllImport("__Internal")]
+  private static extern int init(string name);
+  
 {{$methods}}
 }
 `;

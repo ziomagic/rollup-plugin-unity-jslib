@@ -1,6 +1,6 @@
 import { DependentRoller, roll } from "./dependent";
 
-var window: any;
+declare var alert: any;
 export default class UnityHooks {
   static sumIntegers(x: number, y: number): number {
     return x + y;
@@ -11,10 +11,15 @@ export default class UnityHooks {
   }
 
   static alertString(str: string) {
-    window.alert(str);
+    alert(str);
   }
 
   static logObject(logType: string, obj: DependentRoller) {
     console.log(obj);
+  }
+
+  static roll() {
+    let roller = new DependentRoller();
+    roller.methodRoll();
   }
 }
