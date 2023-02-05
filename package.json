@@ -1,11 +1,16 @@
 {
   "name": "rollup-plugin-unity-jslib",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "author": "Sławomir Kmiecik",
-  "main": "./index.csjs.js",
-  "typings": "./typings.d.ts",
+  "repository": {
+    "url": "https://github.com/ziomagic/rollup-plugin-unity-jslib"
+  },
+  "main": "out/index.es.mjs",
+  "typings": "out/src/index.d.ts",
   "files": [
-    "src/*.ts"
+    "out/index.csjs.js",
+    "out/index.es.mjs",
+    "out/src/"
   ],
   "scripts": {
     "check": "rollup -c && rollup -c ./tests/rollup.config.mjs"
