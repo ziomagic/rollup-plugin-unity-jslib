@@ -30,10 +30,27 @@ export class JsLibBuilder {
   }
 
   private buildInitMethod(code: string) {
+    const uCallFuncCode = `function UCALL(funcName, ...args) {
+      if(!window._unityInstance){
+        console.log(window._unityInstance);
+        console.log("Unity game instance could not be found. Please modify your index.html template.");
+        return;
+      }
+      
+      const cArgs = [gameObjName, funcName, ...args];
+
+      console.log(cArgs);
+      window._unityInstance.SendMessage(...cArgs);
+    }`;
+
+    code = code.replace("'use strict';", "'use strict';\n\n" + uCallFuncCode);
+
     return `
     ${this.methodPrefix}init: function(gameObjNameStr) {
-      var gameObjName = UTF8ToString(gameObjNameStr);
-      ${this.namespace} = ${code}
+      const gameObjName = UTF8ToString(gameObjNameStr);
+      const gInstance = window._unityInstance;
+
+      ${this.namespace} = ${code};
     },
   `;
   }
