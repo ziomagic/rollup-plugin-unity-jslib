@@ -7,6 +7,6 @@ export class DependentRoller {
   methodRoll() {
     roll();
 
-    UCALL("OnFinished", 10, "KWII");
+    UCALL("OnFinished", "KWII");
   }
 }

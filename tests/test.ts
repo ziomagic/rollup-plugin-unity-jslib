@@ -13,11 +13,12 @@ export default class UnityHooks {
 
   static alertString(str: string) {
     alert(str);
-    UCALL("OnReady", 10, 15);
+    UCALL("OnReady", 10);
   }
 
   static logObject(logType: string, obj: DependentRoller) {
     console.log(obj);
+    UCALL("Logged");
   }
 
   static roll() {

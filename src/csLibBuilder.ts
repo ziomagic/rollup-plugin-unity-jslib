@@ -106,13 +106,17 @@ export class CsLibBuilder {
   private buildUnityCallbacks(calls: UnityCall[]) {
     let output = "";
     for (var c of calls) {
-      const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
-      output += `\npublic UnityEvent<${parameters}> ${c.methodName}Event;`;
+      if (c.parameterTypes.length > 0) {
+        const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
+        output += `\npublic UnityEvent<${parameters}> ${c.methodName}Event;`;
+      } else {
+        output += `\npublic UnityEvent ${c.methodName}Event;`;
+      }
     }
 
     for (var c of calls) {
-      const methodParams = c.parameterTypes.map((x, i) => this.buildReturnType(x) + " param" + i).join(", ");
-      const execParams = c.parameterTypes.map((x, i) => "param" + i).join(", ");
+      const methodParams = c.parameterTypes.map((x) => this.buildReturnType(x) + " arg").join(", ");
+      const execParams = c.parameterTypes.length > 0 ? "arg" : "";
       const eventName = c.methodName + "Event";
       output += `\npublic void ${c.methodName}(${methodParams})
       {

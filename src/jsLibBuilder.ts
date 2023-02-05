@@ -30,17 +30,13 @@ export class JsLibBuilder {
   }
 
   private buildInitMethod(code: string) {
-    const uCallFuncCode = `function UCALL(funcName, ...args) {
+    const uCallFuncCode = `function UCALL(funcName, arg) {
       if(!window._unityInstance){
-        console.log(window._unityInstance);
         console.log("Unity game instance could not be found. Please modify your index.html template.");
         return;
       }
       
-      const cArgs = [gameObjName, funcName, ...args];
-
-      console.log(cArgs);
-      window._unityInstance.SendMessage(...cArgs);
+      window._unityInstance.SendMessage(gameObjName, funcName, arg);
     }`;
 
     code = code.replace("'use strict';", "'use strict';\n\n" + uCallFuncCode);

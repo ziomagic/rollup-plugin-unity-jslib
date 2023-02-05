@@ -16,6 +16,8 @@ export interface JsLibOptions {
   bundleFileName?: string;
 }
 
+export declare function UCALL(methodName: string, arg: number | string): void;
+
 var parserResult: HooksParserResult;
 
 export default function toUnityJsLib(options: JsLibOptions): Plugin {

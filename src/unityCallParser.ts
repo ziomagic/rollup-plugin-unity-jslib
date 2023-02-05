@@ -51,20 +51,25 @@ export class UnityCallParser {
       parameterTypes: [],
     };
 
-    let i = 0;
-    exp.arguments.forEach((arg) => {
-      if (i++ > 0) {
-        call.parameterTypes.push(this.toArgumentType(arg.kind));
-        return;
-      }
+    if (exp.arguments.length < 1) {
+      throw new Error("Invalid UCALL execution. Correc call: UCALL('FuncName', 'optionalVar'). \n" + code);
+    }
 
-      if (arg.kind != ts.SyntaxKind.StringLiteral) {
-        throw new Error("Invalid UCALL execution. First argument should be a string with Unity method name. \n" + code);
-      }
+    if (exp.arguments.length > 2) {
+      throw new Error("Invalid UCALL execution. Correc call: UCALL('FuncName', 'optionalVar'). \n" + code);
+    }
 
-      call.methodName = (arg as any).text;
-    });
+    const funcNameArg = exp.arguments[0];
+    if (funcNameArg.kind != ts.SyntaxKind.StringLiteral) {
+      throw new Error("Invalid UCALL execution. Correc call: UCALL('FuncName', 'optionalVar'). \n" + code);
+    }
 
+    call.methodName = (funcNameArg as any).text;
+
+    if (exp.arguments.length > 1) {
+      const variableArg = exp.arguments[1];
+      call.parameterTypes.push(this.toArgumentType(variableArg.kind));
+    }
     return call;
   }
 
