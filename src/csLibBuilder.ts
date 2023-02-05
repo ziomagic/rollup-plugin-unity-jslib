@@ -1,12 +1,15 @@
 import { HookMethod, HookParameter, HookParameterType } from "./hookMethod";
+import { UnityCall } from "./unityCall";
 
 const template = `using UnityEngine;
+using UnityEngine.Events;
 using System.Runtime.InteropServices;
 
 public class {{$className}} : MonoBehaviour {
 
   {{$methods}}
   {{$code}}
+  {{$callbacks}}
 }
 `;
 
@@ -19,7 +22,7 @@ export class CsLibBuilder {
     this.methodPrefix = methodPrefix;
   }
 
-  buildCsClass(methods: HookMethod[]) {
+  buildCsClass(methods: HookMethod[], calls: UnityCall[]) {
     let methodsStr = this.buildInitMethod();
     for (let m of methods) {
       methodsStr += "\n";
@@ -50,7 +53,8 @@ export class CsLibBuilder {
     let output = template
       .replace("{{$className}}", this.className)
       .replace("{{$methods}}", methodsStr)
-      .replace("{{$code}}", codeStr);
+      .replace("{{$code}}", codeStr)
+      .replace("{{$callbacks}}", this.buildUnityCallbacks(calls));
     return output;
   }
 
@@ -97,5 +101,25 @@ export class CsLibBuilder {
     }
 
     return "string";
+  }
+
+  private buildUnityCallbacks(calls: UnityCall[]) {
+    let output = "";
+    for (var c of calls) {
+      const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
+      output += `\npublic UnityEvent<${parameters}> ${c.methodName}Event;`;
+    }
+
+    for (var c of calls) {
+      const methodParams = c.parameterTypes.map((x, i) => this.buildReturnType(x) + " param" + i).join(", ");
+      const execParams = c.parameterTypes.map((x, i) => "param" + i).join(", ");
+      const eventName = c.methodName + "Event";
+      output += `\npublic void ${c.methodName}(${methodParams})
+      {
+           if (${eventName} != null) { ${eventName}.Invoke(${execParams}); };
+      }`;
+    }
+
+    return output;
   }
 }

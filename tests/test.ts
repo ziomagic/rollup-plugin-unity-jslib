@@ -1,5 +1,6 @@
 import { DependentRoller, roll } from "./dependent";
 
+declare var UCALL: any;
 declare var alert: any;
 export default class UnityHooks {
   static sumIntegers(x: number, y: number): number {
@@ -12,6 +13,7 @@ export default class UnityHooks {
 
   static alertString(str: string) {
     alert(str);
+    UCALL("OnReady", 10, 15);
   }
 
   static logObject(logType: string, obj: DependentRoller) {

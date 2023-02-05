@@ -5,6 +5,8 @@
     "name": "Sławomir Kmiecik",
     "url": "https://github.com/ziomagic/rollup-plugin-unity-jslib"
   },
+  "main": "./index.csjs.js",
+  "typings": "./typings.d.ts",
   "scripts": {
     "check": "rollup -c && rollup -c ./tests/rollup.config.mjs"
   },
