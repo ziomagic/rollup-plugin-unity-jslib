@@ -46,7 +46,7 @@ export class JsLibBuilder {
       const gameObjName = UTF8ToString(gameObjNameStr);
       const gInstance = window._unityInstance;
 
-      ${this.namespace} = ${code};
+      ${this.namespace} = ${code}
     },
   `;
   }

@@ -6,7 +6,7 @@ const template = `using UnityEngine;
 using UnityEngine.Events;
 using System.Runtime.InteropServices;
 
-public class {{$className}} : MonoBehaviour 
+public class {{$className}} : MonoBehaviour
 {
 {{$methods}}
 {{$callbacks}}
