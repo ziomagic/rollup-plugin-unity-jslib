@@ -12,6 +12,11 @@
     "out/index.es.mjs",
     "out/src/"
   ],
+  "keywords": [
+    "unity",
+    "jslib",
+    "rol"
+  ],
   "scripts": {
     "check": "rollup -c && rollup -c ./example/rollup.config.mjs",
     "test": "jest"
