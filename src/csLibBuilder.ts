@@ -1,3 +1,4 @@
+import { CsCode } from "./csCode";
 import { HookMethod, HookParameter, HookParameterType } from "./hookMethod";
 import { UnityCall } from "./unityCall";
 
@@ -5,11 +6,10 @@ const template = `using UnityEngine;
 using UnityEngine.Events;
 using System.Runtime.InteropServices;
 
-public class {{$className}} : MonoBehaviour {
-
-  {{$methods}}
-  {{$code}}
-  {{$callbacks}}
+public class {{$className}} : MonoBehaviour 
+{
+{{$methods}}
+{{$callbacks}}
 }
 `;
 
@@ -23,45 +23,43 @@ export class CsLibBuilder {
   }
 
   buildCsClass(methods: HookMethod[], calls: UnityCall[]) {
-    let methodsStr = this.buildInitMethod();
+    let cs = this.buildInitMethod();
+
     for (let m of methods) {
-      methodsStr += "\n";
-      methodsStr += '[DllImport("__Internal")]';
-      methodsStr += "\n";
-      methodsStr += `private static extern ${this.buildReturnType(m.returnType)} ${this.methodPrefix}${
-        m.name
-      }${this.buildFunctionParameters(m.parameters)};`;
-      methodsStr += "\n";
+      const returnTypeStr = this.buildReturnType(m.returnType);
+      const funcParamsStr = this.buildFunctionParameters(m.parameters);
+
+      cs.addMethodHeader('[DllImport("__Internal")]');
+      cs.addMethodHeader(`private static extern ${returnTypeStr} ${this.methodPrefix}${m.name}${funcParamsStr};`);
     }
 
-    let codeStr = `private void Awake() 
-    {
-        ${this.methodPrefix}init(name);
-    }`;
+    cs.addNewLine();
+
+    cs.addMethodHeader("private void Awake()");
+    cs.addMethodBody(`${this.methodPrefix}init(name);`);
+
     for (let m of methods) {
       const methodName = m.name.charAt(0).toUpperCase() + m.name.slice(1);
       const returnType = this.buildReturnType(m.returnType);
       const functionParams = this.buildFunctionParameters(m.parameters);
       const returnKeyword = m.returnType == HookParameterType.Void ? "" : "return ";
-      codeStr += "\n";
-      codeStr += `public ${returnType} ${methodName}${functionParams} 
-      {
-        ${returnKeyword}${this.methodPrefix}${m.name}${this.buildFunctionCall(m.parameters)};
-      }`;
+
+      cs.addMethodHeader(`public ${returnType} ${methodName}${functionParams}`);
+      cs.addMethodBody(`${returnKeyword}${this.methodPrefix}${m.name}${this.buildFunctionCall(m.parameters)};`);
     }
 
     let output = template
       .replace("{{$className}}", this.className)
-      .replace("{{$methods}}", methodsStr)
-      .replace("{{$code}}", codeStr)
+      .replace("{{$methods}}", cs.toString())
       .replace("{{$callbacks}}", this.buildUnityCallbacks(calls));
     return output;
   }
 
   private buildInitMethod() {
-    return `[DllImport("__Internal")]
-    private static extern int ${this.methodPrefix}init(string name);
-    `;
+    let output = new CsCode();
+    output.addMethodHeader('[DllImport("__Internal")]');
+    output.addMethodHeader(`private static extern int ${this.methodPrefix}init(string name);`);
+    return output;
   }
 
   private buildFunctionParameters(parameters: HookParameter[]) {
@@ -104,13 +102,14 @@ export class CsLibBuilder {
   }
 
   private buildUnityCallbacks(calls: UnityCall[]) {
-    let output = "";
+    const output = new CsCode();
+
     for (var c of calls) {
       if (c.parameterTypes.length > 0) {
         const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
-        output += `\npublic UnityEvent<${parameters}> ${c.methodName}Event;`;
+        output.addVariable(`public UnityEvent<${parameters}> ${c.methodName}Event;`);
       } else {
-        output += `\npublic UnityEvent ${c.methodName}Event;`;
+        output.addVariable(`public UnityEvent ${c.methodName}Event;`);
       }
     }
 
@@ -118,12 +117,11 @@ export class CsLibBuilder {
       const methodParams = c.parameterTypes.map((x) => this.buildReturnType(x) + " arg").join(", ");
       const execParams = c.parameterTypes.length > 0 ? "arg" : "";
       const eventName = c.methodName + "Event";
-      output += `\npublic void ${c.methodName}(${methodParams})
-      {
-           if (${eventName} != null) { ${eventName}.Invoke(${execParams}); };
-      }`;
+
+      output.addMethodHeader(`public void ${c.methodName}(${methodParams})`);
+      output.addMethodBody(`if (${eventName} != null) { ${eventName}.Invoke(${execParams}); }`);
     }
 
-    return output;
+    return output.toString();
   }
 }
