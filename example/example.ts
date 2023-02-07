@@ -25,4 +25,8 @@ export default class UnityHooks {
     let roller = new DependentRoller();
     roller.methodRoll();
   }
+
+  kwi() {
+    console.log("aa");
+  }
 }

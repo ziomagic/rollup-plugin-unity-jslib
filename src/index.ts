@@ -18,8 +18,8 @@ export interface JsLibOptions {
 
 export declare function UCALL(methodName: string, arg: number | string): void;
 
-var parserResult: HooksParserResult;
-
+var parserResult: HooksParserResult | null;
+var jsLibRootClassFound = false;
 export default function toUnityJsLib(options: JsLibOptions): Plugin {
   options = options ?? {};
   const jsLibFileName = options.jsLibFileName ?? "index";
@@ -29,10 +29,21 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
   const methodPrefix = options.methodPrefix ?? "SK_";
   const bundleFileName = options.bundleFileName ?? "index.js";
   const unityCalls: UnityCall[] = [];
+  const classHeader = `class ${rootClassName}`;
 
   return {
     name: "toJsLib",
     async generateBundle(_: OutputOptions, bundle: OutputBundle) {
+      if (!jsLibRootClassFound) {
+        throw new Error(`[toUnityJs] Default class not found. Ensure that "export default ${classHeader}" exists."`);
+      }
+
+      if (!parserResult || parserResult.methods.length == 0) {
+        throw new Error(
+          `[toUnityJs] Not exportable methods found. Ensure that ${classHeader}" contains static methods."`
+        );
+      }
+
       let code = (bundle[bundleFileName] as any).code;
       let builder = new JsLibBuilder(jsNamespace, methodPrefix);
       code = builder.buildJsLib(code, parserResult.methods);
@@ -52,9 +63,10 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
 
     async transform(code: string, id: string) {
       const ucallParser = new UnityCallParser();
-      if (code.includes(`class ${rootClassName}`)) {
+      if (code.includes(classHeader)) {
         const parser = new HooksParser();
         parserResult = parser.parse(code);
+        jsLibRootClassFound = true;
       }
 
       const ucalls = ucallParser.collectUnityCalls(code);
@@ -66,6 +78,11 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
         code: code,
       };
       return result;
+    },
+
+    buildStart() {
+      jsLibRootClassFound = false;
+      parserResult = null;
     },
   };
 }

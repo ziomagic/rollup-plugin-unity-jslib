@@ -21,6 +21,12 @@ export class HooksParser {
     ts.forEachChild(classNode, (node) => {
       if (ts.isMethodDeclaration(node)) {
         const m = node as ts.MethodDeclaration;
+        const isStatic = ts.getModifiers(m)?.some((x) => x.kind == ts.SyntaxKind.StaticKeyword);
+        if (!isStatic) {
+          console.warn("[toUnityJsLib] Skipped non static method - " + (m.name as any)?.escapedText);
+          return;
+        }
+
         const method = this.parseMethod(m);
         result.methods.push(method);
       }
