@@ -68,6 +68,7 @@ export class UnityCallParser {
 
     if (exp.arguments.length > 1) {
       const variableArg = exp.arguments[1];
+
       call.parameterTypes.push(this.toArgumentType(variableArg.kind));
     }
     return call;
@@ -76,6 +77,8 @@ export class UnityCallParser {
   private toArgumentType(tsKind: number) {
     switch (tsKind) {
       case ts.SyntaxKind.StringLiteral:
+      case ts.SyntaxKind.Identifier:
+      case ts.SyntaxKind.CallExpression:
         return HookParameterType.String;
       case ts.SyntaxKind.NumericLiteral:
         return HookParameterType.Number;

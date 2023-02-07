@@ -9,4 +9,9 @@ export class DependentRoller {
 
     UCALL("OnFinished", "KWII");
   }
+
+  methodOther() {
+    const result = JSON.stringify(["Hej", "ho"]);
+    UCALL("onSomething", result);
+  }
 }
