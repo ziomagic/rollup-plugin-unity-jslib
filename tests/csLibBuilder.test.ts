@@ -8,7 +8,7 @@ describe("csLibBuilder", () => {
   let builder: CsLibBuilder;
 
   beforeEach(() => {
-    builder = new CsLibBuilder("TestHook", "TEST_");
+    builder = new CsLibBuilder("TestHook", null, "TEST_");
   });
 
   it("Should generate C# code", () => {

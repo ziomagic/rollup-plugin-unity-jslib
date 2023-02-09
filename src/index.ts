@@ -6,14 +6,23 @@ import { JsLibBuilder } from "./jsLibBuilder";
 import { UnityCall } from "./unityCall";
 import { UnityCallParser } from "./unityCallParser";
 
+export interface CsOutputOptions {
+  fileName: string;
+  namespace?: null;
+}
+
+export interface JsLibOutputOptions {
+  fileName: string;
+  windowObjName: string;
+}
+
 export interface JsLibOptions {
   rootFile?: string;
   rootClassName: string;
-  jsLibFileName?: string;
-  csFileName?: string;
-  namespace?: string;
   methodPrefix?: string;
   bundleFileName?: string;
+  jsLibOutput?: JsLibOutputOptions;
+  csOutput?: CsOutputOptions;
 }
 
 export declare function UCALL(methodName: string, arg: number | string): void;
@@ -22,12 +31,17 @@ var parserResult: HooksParserResult | null;
 var jsLibRootClassFound = false;
 export default function toUnityJsLib(options: JsLibOptions): Plugin {
   options = options ?? {};
-  const jsLibFileName = options.jsLibFileName ?? "index";
-  const csFileName = options.csFileName ?? "UnityJsLibHooks";
+  options.csOutput ?? { fileName: "UnityJsLibHooks", namespace: null };
+  options.jsLibOutput ?? { fileName: "index", windowObjName: "_skJsLibEngine" };
+
+  const jsLibFileName = options.jsLibOutput?.fileName ?? "index";
+  const jsNamespace = options.jsLibOutput?.windowObjName ?? "_skJsLibEngine";
+  const csFileName = options.csOutput?.fileName ?? "UnityJsLibHooks";
+  const csNamespace = options.csOutput?.namespace ?? null;
   const rootClassName = options.rootClassName ?? "UnityHooks";
-  const jsNamespace = options.namespace ?? "_skJsLibEngine";
   const methodPrefix = options.methodPrefix ?? "SK_";
   const bundleFileName = options.bundleFileName ?? "index.js";
+
   const unityCalls: UnityCall[] = [];
   const classHeader = `class ${rootClassName}`;
 
@@ -53,7 +67,7 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
         source: code,
       });
 
-      let csBuilder = new CsLibBuilder(csFileName, methodPrefix);
+      let csBuilder = new CsLibBuilder(csFileName, csNamespace, methodPrefix);
       this.emitFile({
         type: "asset",
         fileName: `${csFileName}.cs`,

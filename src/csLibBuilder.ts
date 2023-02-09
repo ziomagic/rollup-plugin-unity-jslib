@@ -15,10 +15,12 @@ public class {{$className}} : MonoBehaviour
 
 export class CsLibBuilder {
   private className: string;
+  private namespace: string | null;
   private methodPrefix: string;
 
-  constructor(className: string, methodPrefix: string) {
+  constructor(className: string, namespace: string | null, methodPrefix: string) {
     this.className = className;
+    this.namespace = namespace;
     this.methodPrefix = methodPrefix;
   }
 
@@ -52,6 +54,10 @@ export class CsLibBuilder {
       .replace("{{$className}}", this.className)
       .replace("{{$methods}}", cs.toString())
       .replace("{{$callbacks}}", this.buildUnityCallbacks(calls));
+
+    if (this.namespace) {
+      output = CsCode.addNamespace(output, this.namespace);
+    }
     return output;
   }
 

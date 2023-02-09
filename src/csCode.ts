@@ -28,4 +28,10 @@ export class CsCode {
   toString() {
     return this.output;
   }
+
+  static addNamespace(code: string, namespace: string) {
+    code = `namespace ${namespace}\n{\n` + code;
+    code += "\n}";
+    return code;
+  }
 }
