@@ -172,8 +172,8 @@ export class CsLibBuilder {
         [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 5)] byte[] buffer, int len)`);
 
       output.beginMethodBody();
-      output.addCodeLine("var funcName = System.Text.Encoding.UTF8.GetString(funcNameBuff);");
-      output.addCodeLine("var payload = System.Text.Encoding.UTF8.GetString(payloadBuff);");
+      output.addCodeLine("var funcName = System.Text.Encoding.UTF8.GetString(funcNameBuff, 0, funcNameLen - 1);");
+      output.addCodeLine("var payload = System.Text.Encoding.UTF8.GetString(payloadBuff, 0, payloadLen - 1);");
 
       for (var c of calls.filter((x) => x.dynamicCall)) {
         if (dynCallProduced.has(c.methodName)) {

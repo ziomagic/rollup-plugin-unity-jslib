@@ -29,8 +29,8 @@ public static void TEST_OnDynamicCall(
     [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 3)] byte[] payloadBuff, int payloadLen,
     [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 5)] byte[] buffer, int len)
 {
-var funcName = System.Text.Encoding.UTF8.GetString(funcNameBuff);
-var payload = System.Text.Encoding.UTF8.GetString(payloadBuff);
+var funcName = System.Text.Encoding.UTF8.GetString(funcNameBuff, 0, funcNameLen - 1);
+var payload = System.Text.Encoding.UTF8.GetString(payloadBuff, 0, payloadLen - 1);
 if(funcName == "OnDynamicCall")
 {
 if (OnDynamicCallEvent != null) { OnDynamicCallEvent.Invoke(payload, buffer); }

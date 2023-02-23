@@ -62,11 +62,11 @@ export class JsLibBuilder {
           data = new Uint8Array();
         }
     
-        const payloadBufferSize = lengthBytesUTF8(payload);
+        const payloadBufferSize = lengthBytesUTF8(payload) + 1;
         const payloadBuffer = _malloc(payloadBufferSize);
         stringToUTF8(payload, payloadBuffer, payloadBufferSize);
     
-        const funcNameBufferSize = lengthBytesUTF8(funcName);
+        const funcNameBufferSize = lengthBytesUTF8(funcName) + 1;
         const funcNameBuffer = _malloc(funcNameBufferSize);
         stringToUTF8(funcName, funcNameBuffer, funcNameBufferSize);
     
