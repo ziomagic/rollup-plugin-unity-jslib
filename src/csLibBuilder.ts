@@ -17,11 +17,13 @@ export class CsLibBuilder {
   private className: string;
   private namespace: string | null;
   private methodPrefix: string;
+  private useDynamicCall: boolean;
 
-  constructor(className: string, namespace: string | null, methodPrefix: string) {
+  constructor(className: string, namespace: string | null, methodPrefix: string, useDynamicCall: boolean) {
     this.className = className;
     this.namespace = namespace;
     this.methodPrefix = methodPrefix;
+    this.useDynamicCall = useDynamicCall;
   }
 
   buildCsClass(methods: HookMethod[], calls: UnityCall[]) {
@@ -109,8 +111,16 @@ export class CsLibBuilder {
 
   private buildUnityCallbacks(calls: UnityCall[]) {
     const output = new CsCode();
+    const eventsProduced = new Set<string>();
+    const methodsProduced = new Set<string>();
+    const dynCallProduced = new Set<string>();
 
     for (var c of calls) {
+      if (eventsProduced.has(c.methodName)) {
+        continue;
+      }
+      eventsProduced.add(c.methodName);
+
       if (c.parameterTypes.length > 0) {
         const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
         output.addVariable(`public UnityEvent<${parameters}> ${c.methodName}Event;`);
@@ -119,13 +129,46 @@ export class CsLibBuilder {
       }
     }
 
-    for (var c of calls) {
+    for (var c of calls.filter((x) => !x.dynamicCall)) {
+      if (methodsProduced.has(c.methodName)) {
+        continue;
+      }
+
+      methodsProduced.add(c.methodName);
+
       const methodParams = c.parameterTypes.map((x) => this.buildReturnType(x) + " arg").join(", ");
       const execParams = c.parameterTypes.length > 0 ? "arg" : "";
       const eventName = c.methodName + "Event";
 
       output.addMethodHeader(`public void ${c.methodName}(${methodParams})`);
       output.addMethodBody(`if (${eventName} != null) { ${eventName}.Invoke(${execParams}); }`);
+    }
+
+    if (this.useDynamicCall) {
+      output.addMethodHeader(`public static void OnDynamicCall(
+        [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)] byte[] funcNameBuff, int funcNameLen,
+        [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 3)] byte[] payloadBuff, int payloadLen,
+        [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 5)] byte[] buffer, int len)`);
+
+      output.beginMethodBody();
+      output.addCodeLine("var funcName = System.Text.Encoding.UTF8.GetString(funcNameBuff);");
+      output.addCodeLine("var payload = System.Text.Encoding.UTF8.GetString(payloadBuff);");
+
+      for (var c of calls.filter((x) => x.dynamicCall)) {
+        if (dynCallProduced.has(c.methodName)) {
+          continue;
+        }
+        dynCallProduced.add(c.methodName);
+
+        const eventName = c.methodName + "Event";
+
+        output.addCodeLine(`if(funcName == "${c.methodName}")`);
+        output.beginMethodBody();
+        output.addCodeLine(`if (${eventName} != null) { ${eventName}.Invoke(payload, buffer); }`);
+        output.addCodeLine("return;");
+        output.endMethodBody();
+      }
+      output.endMethodBody();
     }
 
     return output.toString();

@@ -7,6 +7,11 @@ export class HooksParserResult {
 
 export class HooksParser {
   private _source: ts.SourceFile | undefined;
+  private _useDynCall: boolean = false;
+
+  constructor(useDynamicCalls: boolean) {
+    this._useDynCall = useDynamicCalls;
+  }
 
   parse(code: string): HooksParserResult {
     this._source = ts.createSourceFile("unityHooks.ts", code, ts.ScriptTarget.ES2015);

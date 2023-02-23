@@ -10,5 +10,8 @@ export default {
       file: "example/out/index.js",
     },
   ],
-  plugins: [toUnityJsLib({ csOutput: { namespace: "Kwi" } }), typescript({ tsconfig: "./example/tsconfig.json" })],
+  plugins: [
+    toUnityJsLib({ useDynamicCall: true, csOutput: { namespace: "Kwo" } }),
+    typescript({ tsconfig: "./example/tsconfig.json" }),
+  ],
 };

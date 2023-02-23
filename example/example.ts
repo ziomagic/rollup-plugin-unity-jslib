@@ -1,6 +1,7 @@
 import { DependentRoller, roll } from "./dependent";
 
 declare var UCALL: any;
+declare var DYNCALL: any;
 declare var alert: any;
 export default class UnityHooks {
   static sumIntegers(x: number, y: number): number {
@@ -24,6 +25,15 @@ export default class UnityHooks {
   static roll() {
     let roller = new DependentRoller();
     roller.methodRoll();
+  }
+
+  static dynamicCall() {
+    const obj = { x: 12, y: "siper" };
+    DYNCALL("onDynamicCall", obj, null);
+  }
+
+  static dynamicCall2() {
+    DYNCALL("onDynamicCall", "Kwiii", [12, 12, 12]);
   }
 
   kwi() {

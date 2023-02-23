@@ -3,6 +3,12 @@ import { HookParameterType } from "./hookMethod";
 import { UnityCall } from "./unityCall";
 
 export class UnityCallParser {
+  private _useDynCalls: boolean;
+
+  constructor(useDynamicCalls: boolean) {
+    this._useDynCalls = useDynamicCalls;
+  }
+
   public collectUnityCalls(code: string) {
     const match = code.match(/UCALL\(([^)]+)\)/g);
     if (!match) {
@@ -17,10 +23,25 @@ export class UnityCallParser {
       }
     }
 
+    if (this._useDynCalls) {
+      const dynCallMatch = code.match(/DYNCALL\(([^)]+)\)/g);
+      if (!dynCallMatch) {
+        return [];
+      }
+
+      for (const m of dynCallMatch) {
+        const calls = this.parseCallCode(m, true);
+        for (const c of calls) {
+          output.push(c);
+        }
+      }
+    }
+
+    this.validateCallList(output);
     return output;
   }
 
-  private parseCallCode(funcCode: string) {
+  private parseCallCode(funcCode: string, dynamicCall: boolean = false) {
     const s = ts.createSourceFile("", funcCode, ts.ScriptTarget.ES2015);
     const calls: UnityCall[] = [];
     s.forEachChild((x) => {
@@ -34,7 +55,7 @@ export class UnityCallParser {
         return;
       }
 
-      const call = this.parseExpression(funcCode, exp);
+      const call = dynamicCall ? this.parseDynCallExpression(funcCode, exp) : this.parseUCallExpression(funcCode, exp);
       if (!call) {
         return;
       }
@@ -45,10 +66,11 @@ export class UnityCallParser {
     return calls;
   }
 
-  private parseExpression(code: string, exp: ts.CallExpression) {
+  private parseUCallExpression(code: string, exp: ts.CallExpression) {
     const call: UnityCall = {
       methodName: "",
       parameterTypes: [],
+      dynamicCall: false,
     };
 
     if (exp.arguments.length < 1) {
@@ -74,6 +96,36 @@ export class UnityCallParser {
     return call;
   }
 
+  private parseDynCallExpression(code: string, exp: ts.CallExpression) {
+    const call: UnityCall = {
+      methodName: "",
+      parameterTypes: [],
+      dynamicCall: true,
+    };
+
+    if (exp.arguments.length < 1) {
+      throw new Error("Invalid DYNCALL execution. Correc call: DYNCALL('FuncName', 'payload', 'buffer'). \n" + code);
+    }
+
+    if (exp.arguments.length > 3) {
+      throw new Error("Invalid DYNCALL execution. Correc call: DYNCALL('FuncName', 'payload', 'buffer'). \n" + code);
+    }
+
+    const funcNameArg = exp.arguments[0];
+    if (funcNameArg.kind != ts.SyntaxKind.StringLiteral) {
+      throw new Error("Invalid DYNCALL execution. Correc call: DYNCALL('FuncName', 'payload', 'buffer'). \n" + code);
+    }
+
+    call.methodName = (funcNameArg as any).text;
+
+    if (exp.arguments.length > 1) {
+      const variableArg = exp.arguments[1];
+
+      call.parameterTypes.push(this.toArgumentType(variableArg.kind));
+    }
+    return call;
+  }
+
   private toArgumentType(tsKind: number) {
     switch (tsKind) {
       case ts.SyntaxKind.StringLiteral:
@@ -85,5 +137,14 @@ export class UnityCallParser {
     }
 
     throw new Error("Unhandler UCALL argument type " + tsKind);
+  }
+
+  private validateCallList(calls: UnityCall[]) {
+    for (const c of calls) {
+      var sameMethodCalls = calls.filter((x) => x.methodName == c.methodName);
+      if (sameMethodCalls.filter((x) => x.parameterTypes.length != c.parameterTypes.length).length > 0) {
+        throw new Error(`UCALL(${c.methodName}) method was called with different parameters count.`);
+      }
+    }
   }
 }

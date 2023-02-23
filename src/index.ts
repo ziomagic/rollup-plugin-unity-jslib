@@ -23,6 +23,7 @@ export interface JsLibOptions {
   bundleFileName?: string;
   jsLibOutput?: JsLibOutputOptions;
   csOutput?: CsOutputOptions;
+  useDynamicCall: boolean;
 }
 
 export declare function UCALL(methodName: string, arg: number | string): void;
@@ -30,7 +31,7 @@ export declare function UCALL(methodName: string, arg: number | string): void;
 var parserResult: HooksParserResult | null;
 var jsLibRootClassFound = false;
 export default function toUnityJsLib(options: JsLibOptions): Plugin {
-  options = options ?? {};
+  options = options ?? { useDynamicCall: false };
   options.csOutput ?? { fileName: "UnityJsLibHooks", namespace: null };
   options.jsLibOutput ?? { fileName: "index", windowObjName: "_skJsLibEngine" };
 
@@ -41,7 +42,9 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
   const rootClassName = options.rootClassName ?? "UnityHooks";
   const methodPrefix = options.methodPrefix ?? "SK_";
   const bundleFileName = options.bundleFileName ?? "index.js";
+  const useDynamicCall = options.useDynamicCall;
 
+  console.log("use dynamic calls: " + useDynamicCall);
   const unityCalls: UnityCall[] = [];
   const classHeader = `class ${rootClassName}`;
 
@@ -59,7 +62,7 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
       }
 
       let code = (bundle[bundleFileName] as any).code;
-      let builder = new JsLibBuilder(jsNamespace, methodPrefix);
+      let builder = new JsLibBuilder(jsNamespace, methodPrefix, useDynamicCall);
       code = builder.buildJsLib(code, parserResult.methods);
       this.emitFile({
         type: "asset",
@@ -67,7 +70,7 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
         source: code,
       });
 
-      let csBuilder = new CsLibBuilder(csFileName, csNamespace, methodPrefix);
+      let csBuilder = new CsLibBuilder(csFileName, csNamespace, methodPrefix, useDynamicCall);
       this.emitFile({
         type: "asset",
         fileName: `${csFileName}.cs`,
@@ -76,9 +79,9 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
     },
 
     async transform(code: string, id: string) {
-      const ucallParser = new UnityCallParser();
+      const ucallParser = new UnityCallParser(useDynamicCall);
       if (code.includes(classHeader)) {
-        const parser = new HooksParser();
+        const parser = new HooksParser(useDynamicCall);
         parserResult = parser.parse(code);
         jsLibRootClassFound = true;
       }

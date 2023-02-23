@@ -16,6 +16,19 @@ export class CsCode {
     this.output += "\n}\n\n";
   }
 
+  beginMethodBody() {
+    this.output += "{\n";
+  }
+
+  endMethodBody() {
+    this.output += "}\n\n";
+  }
+
+  addCodeLine(code: string) {
+    this.output += code;
+    this.output += "\n";
+  }
+
   addVariable(code: string) {
     this.output += code;
     this.output += "\n";

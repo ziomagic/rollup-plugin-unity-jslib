@@ -1,6 +1,5 @@
 import { JsLibBuilder } from "../src/jsLibBuilder";
 import { HookMethod, HookParameterType } from "../src/hookMethod";
-import { UnityCall } from "../src/unityCall";
 
 const replaceWhitespace = (str: string) => str.replace(/\s+/g, " ").trim();
 //const replaceWhitespace = (str: string) => str;
@@ -9,7 +8,7 @@ describe("csLibBuilder", () => {
   let builder: JsLibBuilder;
 
   beforeEach(() => {
-    builder = new JsLibBuilder("_test", "TEST_");
+    builder = new JsLibBuilder("_test", "TEST_", true);
   });
 
   it("Should generate JsLib code", () => {
@@ -88,6 +87,37 @@ TEST_init: function(gameObjNameStr) {
       }
     
       window._unityInstance.SendMessage(gameObjName, funcName, arg);
+    }
+
+    function DYNCALL(funcName, payload, data) {
+      if (!(payload instanceof String)) {
+        payload = JSON.stringify(payload);
+      }
+  
+      const payloadBufferSize = lengthBytesUTF8(payload) + 1;
+      const payloadBuffer = _malloc(payloadBufferSize);
+      stringToUTF8(payload, payloadBuffer, payloadBufferSize);
+  
+      const funcNameBufferSize = lengthBytesUTF8(funcName) + 1;
+      const funcNameBuffer = _malloc(funcNameBufferSize);
+      stringToUTF8(funcName, funcNameBuffer, funcNameBufferSize);
+  
+      const buffer = _malloc(data.length * data.BYTES_PER_ELEMENT);
+      HEAPU8.set(data, buffer);
+  
+      Module.dynCall_viiiiii(
+        callbacks.onDynamicCall,
+        funcNameBuffer,
+        funcNameBufferSize,
+        payloadBuffer,
+        payloadBufferSize,
+        buffer,
+        data.length
+      );
+  
+      _free(payloadBuffer);
+      _free(funcNameBuffer);
+      _free(buffer);
     }
 
     class UnityHooks {
