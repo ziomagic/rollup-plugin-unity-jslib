@@ -14,4 +14,5 @@ export enum HookParameterType {
   Number,
   Object,
   Void,
+  ByteArray,
 }

@@ -106,6 +106,10 @@ export class CsLibBuilder {
       return "int";
     }
 
+    if (returnType == HookParameterType.ByteArray) {
+      return "byte[]";
+    }
+
     return "string";
   }
 

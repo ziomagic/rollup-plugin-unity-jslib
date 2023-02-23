@@ -122,6 +122,7 @@ export class UnityCallParser {
       const variableArg = exp.arguments[1];
 
       call.parameterTypes.push(this.toArgumentType(variableArg.kind));
+      call.parameterTypes.push(HookParameterType.ByteArray);
     }
     return call;
   }

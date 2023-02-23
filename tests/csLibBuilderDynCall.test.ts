@@ -1,7 +1,7 @@
 import { CsLibBuilder } from "../src/csLibBuilder";
 import { HookMethod, HookParameterType } from "../src/hookMethod";
 import { UnityCall } from "../src/unityCall";
-import { EXPECTED_CS } from "./data/cs.expected";
+import { EXPECTED_CS_DYNCALL } from "./data/cs.dyncall.expected";
 
 const replaceWhitespace = (str: string) => str.replace(/\s+/g, " ").trim();
 
@@ -9,7 +9,7 @@ describe("csLibBuilder", () => {
   let builder: CsLibBuilder;
 
   beforeEach(() => {
-    builder = new CsLibBuilder("TestHook", null, "TEST_", false);
+    builder = new CsLibBuilder("TestHook", null, "TEST_", true);
   });
 
   it("Should generate C# code", () => {
@@ -24,32 +24,24 @@ describe("csLibBuilder", () => {
         ],
         returnType: HookParameterType.Number,
       },
-      {
-        name: "execute",
-        parameters: [
-          {
-            name: "priority",
-            type: HookParameterType.Number,
-          },
-          {
-            name: "fileName",
-            type: HookParameterType.String,
-          },
-        ],
-        returnType: HookParameterType.Void,
-      },
     ];
 
     const calls: UnityCall[] = [
       {
-        methodName: "OnReady",
-        parameterTypes: [HookParameterType.String],
+        methodName: "OnDynamicCall",
+        dynamicCall: true,
+        parameterTypes: [HookParameterType.String, HookParameterType.ByteArray],
+      },
+      {
+        methodName: "OnDynamicCallOther",
+        dynamicCall: true,
+        parameterTypes: [HookParameterType.String, HookParameterType.ByteArray],
       },
     ];
 
     const code = replaceWhitespace(builder.buildCsClass(methods, calls));
 
-    const expected = replaceWhitespace(EXPECTED_CS);
+    const expected = replaceWhitespace(EXPECTED_CS_DYNCALL);
     expect(code).toBe(expected);
   });
 });
