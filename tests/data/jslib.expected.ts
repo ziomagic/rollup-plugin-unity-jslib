@@ -6,7 +6,6 @@ var _testModule = {
 
 TEST_init: function(gameObjNameStr) {
   const gameObjName = UTF8ToString(gameObjNameStr);
-  const gInstance = window._unityInstance;
 
   window._test = (function () {
     'use strict';

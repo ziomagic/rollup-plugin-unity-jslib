@@ -57,12 +57,16 @@ export class JsLibBuilder {
         if (!(payload instanceof String)) {
           payload = JSON.stringify(payload);
         }
+
+        if(!data) {
+          data = new Uint8Array();
+        }
     
-        const payloadBufferSize = lengthBytesUTF8(payload) + 1;
+        const payloadBufferSize = lengthBytesUTF8(payload);
         const payloadBuffer = _malloc(payloadBufferSize);
         stringToUTF8(payload, payloadBuffer, payloadBufferSize);
     
-        const funcNameBufferSize = lengthBytesUTF8(funcName) + 1;
+        const funcNameBufferSize = lengthBytesUTF8(funcName);
         const funcNameBuffer = _malloc(funcNameBufferSize);
         stringToUTF8(funcName, funcNameBuffer, funcNameBufferSize);
     
@@ -88,14 +92,24 @@ export class JsLibBuilder {
 
     code = code.replace("'use strict';", "'use strict';\n\n" + uCallFuncCode);
 
-    return `
+    let initCode = `
     ${this.methodPrefix}init: function(gameObjNameStr) {
       const gameObjName = UTF8ToString(gameObjNameStr);
-      const gInstance = window._unityInstance;
-
       ${this.namespace} = ${code}
     },
   `;
+
+    if (this.useDyncCall) {
+      initCode = `
+      ${this.methodPrefix}init: function(gameObjNameStr, onDynamicCall) {
+        const gameObjName = UTF8ToString(gameObjNameStr);
+        callbacks.onDynamicCall = onDynamicCall;
+        ${this.namespace} = ${code}
+      },
+    `;
+    }
+
+    return initCode;
   }
 
   private buildFunctionParameters(parameters: HookParameter[]) {

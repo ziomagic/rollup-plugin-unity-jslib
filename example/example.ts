@@ -33,7 +33,7 @@ export default class UnityHooks {
   }
 
   static dynamicCall2() {
-    DYNCALL("onDynamicCall", "Kwiii", [12, 12, 12]);
+    DYNCALL("onDynamicCall", "Kwiii", new Uint8Array([12, 12, 12]));
   }
 
   kwi() {

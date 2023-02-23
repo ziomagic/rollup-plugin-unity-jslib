@@ -3,10 +3,9 @@ export const EXEPECTED_JSLIB_DYNAMIC = `var _testModule = {
     onDynamicCall: {}
   },
 
-TEST_init: function(gameObjNameStr) {
+TEST_init: function(gameObjNameStr, onDynamicCall) {
   const gameObjName = UTF8ToString(gameObjNameStr);
-  const gInstance = window._unityInstance;
-
+  callbacks.onDynamicCall = onDynamicCall;
   window._test = (function () {
     'use strict';
 
@@ -24,11 +23,15 @@ TEST_init: function(gameObjNameStr) {
         payload = JSON.stringify(payload);
       }
   
-      const payloadBufferSize = lengthBytesUTF8(payload) + 1;
+      if(!data) {
+        data = new Uint8Array();
+      }
+      
+      const payloadBufferSize = lengthBytesUTF8(payload);
       const payloadBuffer = _malloc(payloadBufferSize);
       stringToUTF8(payload, payloadBuffer, payloadBufferSize);
   
-      const funcNameBufferSize = lengthBytesUTF8(funcName) + 1;
+      const funcNameBufferSize = lengthBytesUTF8(funcName);
       const funcNameBuffer = _malloc(funcNameBufferSize);
       stringToUTF8(funcName, funcNameBuffer, funcNameBufferSize);
   

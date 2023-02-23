@@ -40,7 +40,11 @@ export class CsLibBuilder {
     cs.addNewLine();
 
     cs.addMethodHeader("private void Awake()");
-    cs.addMethodBody(`${this.methodPrefix}init(name);`);
+    if (this.useDynamicCall) {
+      cs.addMethodBody(`${this.methodPrefix}init(name, ${this.methodPrefix}OnDynamicCall);`);
+    } else {
+      cs.addMethodBody(`${this.methodPrefix}init(name);`);
+    }
 
     for (let m of methods) {
       const methodName = m.name.charAt(0).toUpperCase() + m.name.slice(1);
@@ -65,6 +69,16 @@ export class CsLibBuilder {
 
   private buildInitMethod() {
     let output = new CsCode();
+
+    if (this.useDynamicCall) {
+      output.addMethodHeader('[DllImport("__Internal")]');
+      output.addMethodHeader(
+        `private static extern int ${this.methodPrefix}init(string name, System.Action<byte[], int, byte[], int, byte[], int> onBytes);`
+      );
+
+      return output;
+    }
+
     output.addMethodHeader('[DllImport("__Internal")]');
     output.addMethodHeader(`private static extern int ${this.methodPrefix}init(string name);`);
     return output;
@@ -125,11 +139,12 @@ export class CsLibBuilder {
       }
       eventsProduced.add(c.methodName);
 
+      const modifier = c.dynamicCall ? "public static" : "public";
       if (c.parameterTypes.length > 0) {
         const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
-        output.addVariable(`public UnityEvent<${parameters}> ${c.methodName}Event;`);
+        output.addVariable(`${modifier} UnityEvent<${parameters}> ${c.methodName}Event;`);
       } else {
-        output.addVariable(`public UnityEvent ${c.methodName}Event;`);
+        output.addVariable(`${modifier} UnityEvent ${c.methodName}Event;`);
       }
     }
 
@@ -149,7 +164,9 @@ export class CsLibBuilder {
     }
 
     if (this.useDynamicCall) {
-      output.addMethodHeader(`public static void OnDynamicCall(
+      output.addMethodHeader(`
+      [AOT.MonoPInvokeCallback(typeof(System.Action<byte[], int, byte[], int, byte[], int>))]
+      public static void ${this.methodPrefix}OnDynamicCall(
         [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)] byte[] funcNameBuff, int funcNameLen,
         [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 3)] byte[] payloadBuff, int payloadLen,
         [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 5)] byte[] buffer, int len)`);

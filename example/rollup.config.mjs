@@ -11,7 +11,12 @@ export default {
     },
   ],
   plugins: [
-    toUnityJsLib({ useDynamicCall: true, csOutput: { namespace: "Kwo" } }),
+    toUnityJsLib({
+      methodPrefix: "SKDYN_",
+      useDynamicCall: true,
+      csOutput: { namespace: "Kwo" },
+      jsLibOutput: { windowObjName: "_skDynCall" },
+    }),
     typescript({ tsconfig: "./example/tsconfig.json" }),
   ],
 };
