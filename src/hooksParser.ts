@@ -1,5 +1,6 @@
 import ts from "typescript";
 import { HookMethod, HookParameter, HookParameterType } from "./hookMethod";
+import { IJsLibBuilderLogger } from "./logger";
 
 export class HooksParserResult {
   methods: HookMethod[] = [];
@@ -7,10 +8,10 @@ export class HooksParserResult {
 
 export class HooksParser {
   private _source: ts.SourceFile | undefined;
-  private _useDynCall: boolean = false;
+  private logger: IJsLibBuilderLogger;
 
-  constructor(useDynamicCalls: boolean) {
-    this._useDynCall = useDynamicCalls;
+  constructor(logger: IJsLibBuilderLogger) {
+    this.logger = logger;
   }
 
   parse(code: string): HooksParserResult {
@@ -23,14 +24,18 @@ export class HooksParser {
       return result;
     }
 
+    this.logger.log(`Parsing method hooks`);
     ts.forEachChild(classNode, (node) => {
       if (ts.isMethodDeclaration(node)) {
         const m = node as ts.MethodDeclaration;
         const isStatic = ts.getModifiers(m)?.some((x) => x.kind == ts.SyntaxKind.StaticKeyword);
+        const mName = (m.name as any)?.escapedText;
         if (!isStatic) {
-          console.warn("[toUnityJsLib] Skipped non static method - " + (m.name as any)?.escapedText);
+          console.warn("[toUnityJsLib] Skipped non static method - " + mName);
           return;
         }
+
+        this.logger.log(`- Hook found: ${mName}`);
 
         const method = this.parseMethod(m);
         result.methods.push(method);
@@ -74,6 +79,8 @@ export class HooksParser {
       return defaultType;
     }
 
+    this.logger.log(`-- Parameter kind: ${ts.SyntaxKind[type.kind]} (${type.kind})`);
+
     const typeKind = type.kind;
     switch (typeKind) {
       case ts.SyntaxKind.NumberKeyword:
@@ -81,6 +88,7 @@ export class HooksParser {
       case ts.SyntaxKind.StringKeyword:
         return HookParameterType.String;
       case ts.SyntaxKind.ArrayType:
+      case ts.SyntaxKind.TupleType:
         return HookParameterType.ByteArray;
     }
 

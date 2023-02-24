@@ -40,6 +40,10 @@ export default class UnityHooks {
     console.log(data);
   }
 
+  static arrayCall2(data: []) {
+    console.log(data);
+  }
+
   kwi() {
     console.log("aa");
   }

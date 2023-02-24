@@ -1,6 +1,7 @@
 import { JsLibBuilder } from "../src/jsLibBuilder";
 import { HookMethod, HookParameterType } from "../src/hookMethod";
 import { EXPECTED_JS_LIB as EXPECTED_JSLIB } from "./data/jslib.expected";
+import { EmptyLogger } from "../src/logger";
 
 const replaceWhitespace = (str: string) => str.replace(/\s+/g, " ").trim();
 //const replaceWhitespace = (str: string) => str;
@@ -9,7 +10,7 @@ describe("csLibBuilder", () => {
   let builder: JsLibBuilder;
 
   beforeEach(() => {
-    builder = new JsLibBuilder("_test", "TEST_");
+    builder = new JsLibBuilder(new EmptyLogger(), "_test", "TEST_");
   });
 
   it("Should generate JsLib code", () => {

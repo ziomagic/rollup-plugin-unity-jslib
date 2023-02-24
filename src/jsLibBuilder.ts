@@ -1,4 +1,5 @@
 import { HookMethod, HookParameter, HookParameterType } from "./hookMethod";
+import { IJsLibBuilderLogger } from "./logger";
 
 const template = `
 var __LIBNAME__ = {
@@ -14,12 +15,15 @@ mergeInto(LibraryManager.library, __LIBNAME__);
 `;
 
 export class JsLibBuilder {
+  private logger: IJsLibBuilderLogger;
+
   private namespace: string;
   private methodPrefix: string;
   private useDyncCall: boolean;
   private libName: string;
 
-  constructor(namespace: string, methodPrefix: string, useDynCalls: boolean = false) {
+  constructor(logger: IJsLibBuilderLogger, namespace: string, methodPrefix: string, useDynCalls: boolean = false) {
+    this.logger = logger;
     this.libName = namespace;
     this.namespace = "window." + namespace;
     this.methodPrefix = methodPrefix;
@@ -27,8 +31,11 @@ export class JsLibBuilder {
   }
 
   buildJsLib(code: string, methods: HookMethod[]) {
+    this.logger.log("Building .jslib file:");
     let methodsStr = this.buildInitMethod(code);
     for (let m of methods) {
+      this.logger.log(`- Building Method ${m.name}`);
+
       const engineCall = `${this.namespace}.${m.name}${this.buildEngineCallParameters(m.parameters)};`;
 
       methodsStr += `${this.methodPrefix}${m.name}: function(${this.buildFunctionParameters(m.parameters)}) {\n`;
