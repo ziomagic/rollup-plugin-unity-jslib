@@ -10,25 +10,19 @@ export class UnityCallParser {
   }
 
   public collectUnityCalls(code: string) {
-    const match = code.match(/UCALL\(([^)]+)\)/g);
-    if (!match) {
-      return [];
-    }
-
     const output: UnityCall[] = [];
-    for (const m of match) {
-      const calls = this.parseCallCode(m);
-      for (const c of calls) {
-        output.push(c);
+    const match = code.match(/UCALL\(([^)]+)\)/g);
+    if (match) {
+      for (const m of match) {
+        const calls = this.parseCallCode(m);
+        for (const c of calls) {
+          output.push(c);
+        }
       }
     }
 
-    if (this._useDynCalls) {
-      const dynCallMatch = code.match(/DYNCALL\(([^)]+)\)/g);
-      if (!dynCallMatch) {
-        return [];
-      }
-
+    const dynCallMatch = code.match(/DYNCALL\(([^)]+)\)/g);
+    if (this._useDynCalls && dynCallMatch) {
       for (const m of dynCallMatch) {
         const calls = this.parseCallCode(m, true);
         for (const c of calls) {

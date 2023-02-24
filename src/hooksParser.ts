@@ -80,6 +80,8 @@ export class HooksParser {
         return HookParameterType.Number;
       case ts.SyntaxKind.StringKeyword:
         return HookParameterType.String;
+      case ts.SyntaxKind.ArrayType:
+        return HookParameterType.ByteArray;
     }
 
     return HookParameterType.Object;

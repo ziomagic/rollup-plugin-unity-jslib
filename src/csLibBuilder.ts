@@ -94,8 +94,16 @@ export class CsLibBuilder {
 
   private buildFunctionCall(parameters: HookParameter[]) {
     let parametersStr = "";
+    const mapParameter = (param: HookParameter) => {
+      if (param.type == HookParameterType.ByteArray) {
+        return `${param.name}, ${param.name}Len`;
+      }
+
+      return param.name;
+    };
+
     if (parameters) {
-      parametersStr = parameters.map((x) => x.name).join(", ");
+      parametersStr = parameters.map((x) => mapParameter(x)).join(", ");
     }
     return `(${parametersStr})`;
   }
@@ -106,6 +114,8 @@ export class CsLibBuilder {
         return `int ${param.name}`;
       case HookParameterType.String:
         return `string ${param.name}`;
+      case HookParameterType.ByteArray:
+        return `byte[] ${param.name}, int ${param.name}Len`;
     }
 
     return `string ${param.name}`;

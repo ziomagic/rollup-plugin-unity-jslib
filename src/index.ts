@@ -44,7 +44,6 @@ export default function toUnityJsLib(options: JsLibOptions): Plugin {
   const bundleFileName = options.bundleFileName ?? "index.js";
   const useDynamicCall = options.useDynamicCall;
 
-  console.log("use dynamic calls: " + useDynamicCall);
   const unityCalls: UnityCall[] = [];
   const classHeader = `class ${rootClassName}`;
 

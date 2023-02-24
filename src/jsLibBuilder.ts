@@ -115,25 +115,34 @@ export class JsLibBuilder {
   private buildFunctionParameters(parameters: HookParameter[]) {
     let parametersStr = "";
     if (parameters) {
-      parametersStr = parameters.map((x) => x.name).join(", ");
+      parametersStr = parameters.map((x) => this.buildFunctionParam(x)).join(", ");
     }
     return `${parametersStr}`;
+  }
+
+  private buildFunctionParam(param: HookParameter) {
+    if (param.type == HookParameterType.ByteArray) {
+      return `${param.name}, ${param.name}Len`;
+    }
+    return param.name;
   }
 
   private buildEngineCallParameters(parameters: HookParameter[]) {
     let parametersStr = "";
     if (parameters) {
-      parametersStr = parameters.map((x) => this.buildUnityVarcall(x)).join(", ");
+      parametersStr = parameters.map((x) => this.buildUnityVarCall(x)).join(", ");
     }
     return `(${parametersStr})`;
   }
 
-  private buildUnityVarcall(param: HookParameter) {
+  private buildUnityVarCall(param: HookParameter) {
     switch (param.type) {
       case HookParameterType.Number:
         return param.name;
       case HookParameterType.String:
         return `UTF8ToString(${param.name})`;
+      case HookParameterType.ByteArray:
+        return `HEAP8.subarray(${param.name}, ${param.name} + ${param.name}Len)`;
     }
 
     return `JSON.parse(UTF8ToString(${param.name}))`;

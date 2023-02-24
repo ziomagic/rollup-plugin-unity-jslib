@@ -36,6 +36,10 @@ export default class UnityHooks {
     DYNCALL("onDynamicCall", "Kwiii", new Uint8Array([12, 12, 12]));
   }
 
+  static arrayCall(data: any[]) {
+    console.log(data);
+  }
+
   kwi() {
     console.log("aa");
   }
