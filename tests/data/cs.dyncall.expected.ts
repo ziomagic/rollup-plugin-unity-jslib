@@ -10,18 +10,20 @@ private static extern int TEST_init(string name, System.Action<byte[], int, byte
 [DllImport("__Internal")]
 private static extern int TEST_run(string fileName);
 
+#if !UNITY_EDITOR
 private void Awake()
 {
 TEST_init(name, TEST_OnDynamicCall);
 }
+#endif
 
 public int Run(string fileName)
 {
 return TEST_run(fileName);
 }
 
-public static UnityEvent<string, byte[]> OnDynamicCallEvent;
-public static UnityEvent<string, byte[]> OnDynamicCallOtherEvent;
+public static UnityEvent<string, byte[]> OnDynamicCallEvent = new UnityEvent<string, byte[]>();
+public static UnityEvent<string, byte[]> OnDynamicCallOtherEvent = new UnityEvent<string, byte[]>();
 
 [AOT.MonoPInvokeCallback(typeof(System.Action<byte[], int, byte[], int, byte[], int>))]
 public static void TEST_OnDynamicCall(

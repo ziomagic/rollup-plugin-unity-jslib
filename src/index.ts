@@ -29,6 +29,7 @@ export interface JsLibOptions {
 }
 
 export declare function UCALL(methodName: string, arg: number | string): void;
+export declare function DYNCALL(methodName: string, payload: any, buffer: Uint8Array): void;
 
 var parserResult: HooksParserResult | null;
 var jsLibRootClassFound = false;

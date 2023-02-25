@@ -3,7 +3,7 @@ export interface IJsLibBuilderLogger {
 }
 
 export class EmptyLogger implements IJsLibBuilderLogger {
-  log(message: string): void {}
+  log(_: string): void {}
 }
 
 export class DebugLogger implements IJsLibBuilderLogger {

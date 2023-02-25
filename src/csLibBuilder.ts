@@ -39,12 +39,14 @@ export class CsLibBuilder {
 
     cs.addNewLine();
 
+    cs.addMethodHeader("#if !UNITY_EDITOR");
     cs.addMethodHeader("private void Awake()");
     if (this.useDynamicCall) {
       cs.addMethodBody(`${this.methodPrefix}init(name, ${this.methodPrefix}OnDynamicCall);`);
     } else {
       cs.addMethodBody(`${this.methodPrefix}init(name);`);
     }
+    cs.addMethodHeader("#endif");
 
     for (let m of methods) {
       const methodName = m.name.charAt(0).toUpperCase() + m.name.slice(1);
@@ -149,13 +151,12 @@ export class CsLibBuilder {
       }
       eventsProduced.add(c.methodName);
 
+      const hasParameters = c.parameterTypes.length > 0;
+      const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
       const modifier = c.dynamicCall ? "public static" : "public";
-      if (c.parameterTypes.length > 0) {
-        const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
-        output.addVariable(`${modifier} UnityEvent<${parameters}> ${c.methodName}Event;`);
-      } else {
-        output.addVariable(`${modifier} UnityEvent ${c.methodName}Event;`);
-      }
+      const eventStr = hasParameters ? `UnityEvent<${parameters}>` : `UnityEvent`;
+
+      output.addVariable(`${modifier} ${eventStr} ${c.methodName}Event = new ${eventStr}();`);
     }
 
     for (var c of calls.filter((x) => !x.dynamicCall)) {
