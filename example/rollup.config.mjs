@@ -13,7 +13,7 @@ export default {
   plugins: [
     toUnityJsLib({
       methodPrefix: "SKDYN_",
-      debug: true,
+      debug: false,
       useDynamicCall: true,
       csOutput: { namespace: "Kwo" },
       jsLibOutput: { windowObjName: "_skDynCall" },

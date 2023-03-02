@@ -90,6 +90,8 @@ export class HooksParser {
       case ts.SyntaxKind.ArrayType:
       case ts.SyntaxKind.TupleType:
         return HookParameterType.ByteArray;
+      case ts.SyntaxKind.BooleanKeyword:
+        return HookParameterType.Boolean;
     }
 
     return HookParameterType.Object;

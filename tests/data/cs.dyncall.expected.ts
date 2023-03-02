@@ -10,14 +10,12 @@ private static extern int TEST_init(string name, System.Action<byte[], int, byte
 [DllImport("__Internal")]
 private static extern int TEST_run(string fileName);
 
-#if !UNITY_EDITOR
-private void Awake()
+public static void Init(string name)
 {
-TEST_init(name, TEST_OnDynamicCall);
+    TEST_init(name, TEST_OnDynamicCall);
 }
-#endif
 
-public int Run(string fileName)
+public static int Run(string fileName)
 {
 return TEST_run(fileName);
 }

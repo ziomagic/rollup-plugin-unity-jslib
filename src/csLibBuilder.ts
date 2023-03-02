@@ -28,7 +28,6 @@ export class CsLibBuilder {
 
   buildCsClass(methods: HookMethod[], calls: UnityCall[]) {
     let cs = this.buildInitMethod();
-
     for (let m of methods) {
       const returnTypeStr = this.buildReturnType(m.returnType);
       const funcParamsStr = this.buildFunctionParameters(m.parameters);
@@ -39,22 +38,30 @@ export class CsLibBuilder {
 
     cs.addNewLine();
 
-    cs.addMethodHeader("#if !UNITY_EDITOR");
-    cs.addMethodHeader("private void Awake()");
-    if (this.useDynamicCall) {
-      cs.addMethodBody(`${this.methodPrefix}init(name, ${this.methodPrefix}OnDynamicCall);`);
+    if (!this.useDynamicCall) {
+      cs.addMethodHeader("#if !UNITY_EDITOR");
+      cs.addMethodHeader("private void Awake()");
+      if (this.useDynamicCall) {
+        cs.addMethodBody(`${this.methodPrefix}init(name, ${this.methodPrefix}OnDynamicCall);`);
+      } else {
+        cs.addMethodBody(`${this.methodPrefix}init(name);`);
+      }
+      cs.addMethodHeader("#endif");
     } else {
-      cs.addMethodBody(`${this.methodPrefix}init(name);`);
+      const methodName = "Init";
+      const callbackFunc = `${this.methodPrefix}OnDynamicCall`;
+      cs.addMethodHeader(`public static void ${methodName}(string name)`);
+      cs.addMethodBody(`${this.methodPrefix}init(name, ${callbackFunc});`);
     }
-    cs.addMethodHeader("#endif");
 
     for (let m of methods) {
       const methodName = m.name.charAt(0).toUpperCase() + m.name.slice(1);
       const returnType = this.buildReturnType(m.returnType);
       const functionParams = this.buildFunctionParameters(m.parameters);
       const returnKeyword = m.returnType == HookParameterType.Void ? "" : "return ";
+      const modifier = this.useDynamicCall ? "public static" : "public";
 
-      cs.addMethodHeader(`public ${returnType} ${methodName}${functionParams}`);
+      cs.addMethodHeader(`${modifier} ${returnType} ${methodName}${functionParams}`);
       cs.addMethodBody(`${returnKeyword}${this.methodPrefix}${m.name}${this.buildFunctionCall(m.parameters)};`);
     }
 
@@ -118,6 +125,8 @@ export class CsLibBuilder {
         return `string ${param.name}`;
       case HookParameterType.ByteArray:
         return `byte[] ${param.name}, int ${param.name}Len`;
+      case HookParameterType.Boolean:
+        return `bool ${param.name}`;
     }
 
     return `string ${param.name}`;
@@ -134,6 +143,10 @@ export class CsLibBuilder {
 
     if (returnType == HookParameterType.ByteArray) {
       return "byte[]";
+    }
+
+    if (returnType == HookParameterType.Boolean) {
+      return "bool";
     }
 
     return "string";
@@ -153,25 +166,27 @@ export class CsLibBuilder {
 
       const hasParameters = c.parameterTypes.length > 0;
       const parameters = c.parameterTypes.map((x) => this.buildReturnType(x)).join(", ");
-      const modifier = c.dynamicCall ? "public static" : "public";
+      const modifier = this.useDynamicCall ? "public static" : "public";
       const eventStr = hasParameters ? `UnityEvent<${parameters}>` : `UnityEvent`;
 
       output.addVariable(`${modifier} ${eventStr} ${c.methodName}Event = new ${eventStr}();`);
     }
 
-    for (var c of calls.filter((x) => !x.dynamicCall)) {
-      if (methodsProduced.has(c.methodName)) {
-        continue;
+    if (!this.useDynamicCall) {
+      for (var c of calls.filter((x) => !x.dynamicCall)) {
+        if (methodsProduced.has(c.methodName)) {
+          continue;
+        }
+
+        methodsProduced.add(c.methodName);
+
+        const methodParams = c.parameterTypes.map((x) => this.buildReturnType(x) + " arg").join(", ");
+        const execParams = c.parameterTypes.length > 0 ? "arg" : "";
+        const eventName = c.methodName + "Event";
+
+        output.addMethodHeader(`public void ${c.methodName}(${methodParams})`);
+        output.addMethodBody(`if (${eventName} != null) { ${eventName}.Invoke(${execParams}); }`);
       }
-
-      methodsProduced.add(c.methodName);
-
-      const methodParams = c.parameterTypes.map((x) => this.buildReturnType(x) + " arg").join(", ");
-      const execParams = c.parameterTypes.length > 0 ? "arg" : "";
-      const eventName = c.methodName + "Event";
-
-      output.addMethodHeader(`public void ${c.methodName}(${methodParams})`);
-      output.addMethodBody(`if (${eventName} != null) { ${eventName}.Invoke(${execParams}); }`);
     }
 
     if (this.useDynamicCall) {
